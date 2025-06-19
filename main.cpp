@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <cassert>
 
+#define _USE_MATH_DEFINES
+#define FOV M_PI/3.0
+
 
 // Pack into R8G8B8A8 colour
 uint32_t pack_colour(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a = 255)
@@ -63,11 +66,11 @@ void draw_rectangle(std::vector<uint32_t>& img, uint32_t colour,
 
 int main()
 {
-    const size_t img_w = 512;
+    const size_t img_w = 1024;
     const size_t img_h = 512;
 
-    // Create one-dimensional array to hold our img (row-major)
-    std::vector<uint32_t> framebuffer(img_w * img_h, 255);
+    // Create one-dimensional array to hold our img (row-major), initialised to white
+    std::vector<uint32_t> framebuffer(img_w * img_h, pack_colour(255,255,255));
 
     // Fill frambebuffer with colour gradient
     for (size_t y=0; y < img_h; y++)
@@ -120,7 +123,27 @@ int main()
     // Draw player
     float player_x = 3.456F;
     float player_y = 2.345F;
+    float player_direction = 1.523F;
+    const float fov = FOV;
     draw_rectangle(framebuffer, pack_colour(255, 255, 255), img_w, img_h, player_x*rect_w, player_y*rect_h, 5, 5);
+
+    // Draw FOV
+    for (size_t i=0; i<img_w; i++) 
+    {
+        float angle = player_direction-fov/2 + fov*i/float(img_w);
+    
+        // Draw player's line of sight by drawing hypotenuse until hitting an object
+        for (float hyp=0; hyp<20; hyp+=0.05)
+        {
+            float cx = player_x + hyp*cos(angle);
+            float cy = player_y + hyp*sin(angle);
+            if (map[int(cx) + int(cy)*map_w] != ' ') break;  // If we hit a wall/object, break
+
+            size_t pix_x = cx * rect_w;
+            size_t pix_y = cy * rect_h;
+            framebuffer[pix_x + pix_y*img_w] = pack_colour(255, 255, 255); // Draw white line showing view direction
+        }
+    }
 
     drop_ppm_image("./out.ppm", framebuffer, img_w, img_h);
 
