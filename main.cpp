@@ -3,6 +3,8 @@
 #include <vector>
 #include <cstdint>
 #include <cassert>
+#include <sstream>
+#include <iomanip>
 
 #define _USE_MATH_DEFINES
 #define FOV M_PI/3.0
@@ -56,7 +58,7 @@ void draw_rectangle(std::vector<uint32_t>& img, uint32_t colour,
         {
             size_t cx = rect_x+i;
             size_t cy = rect_y+j;
-            assert(cx<img_w && cy<img_h);
+            if (cx>=img_w || cy>=img_h) continue;
 
             img[cx + cy*img_w] = colour;
         }
@@ -73,16 +75,16 @@ int main()
     std::vector<uint32_t> framebuffer(img_w * img_h, pack_colour(255,255,255));
 
     // Fill frambebuffer with colour gradient
-    for (size_t y=0; y < img_h; y++)
-    {
-        for (size_t x=0; x < img_w; x++)
-        {
-            uint8_t r = (255*y)/float(img_h);
-            uint8_t g = (255*x)/float(img_w);
-            uint8_t b = 0;
-            framebuffer[x + y*img_w] = pack_colour(r, g, b);
-        }
-    }
+    // for (size_t y=0; y < img_h; y++)
+    // {
+    //     for (size_t x=0; x < img_w; x++)
+    //     {
+    //         uint8_t r = (255*y)/float(img_h);
+    //         uint8_t g = (255*x)/float(img_w);
+    //         uint8_t b = 0;
+    //         framebuffer[x + y*img_w] = pack_colour(r, g, b);
+    //     }
+    // }
 
     // Plan view of map
     const size_t map_w = 16;
@@ -105,7 +107,7 @@ int main()
                        "0002222222200000";
     assert(sizeof(map) == map_w*map_h + 1); // +1 for null terminated string
 
-    const size_t rect_w = img_w/map_w;
+    const size_t rect_w = img_w/(map_w*2);
     const size_t rect_h = img_h/map_h;
 
     // Draw the map outline
@@ -127,21 +129,29 @@ int main()
     const float fov = FOV;
     draw_rectangle(framebuffer, pack_colour(255, 255, 255), img_w, img_h, player_x*rect_w, player_y*rect_h, 5, 5);
 
-    // Draw FOV
-    for (size_t i=0; i<img_w; i++) 
+    // Draw FOV and 3D view
+    for (size_t i=0; i<img_w/2; i++) 
     {
-        float angle = player_direction-fov/2 + fov*i/float(img_w);
+        float angle = player_direction-fov/2 + fov*i/float(img_w/2);
     
         // Draw player's line of sight by drawing hypotenuse until hitting an object
         for (float hyp=0; hyp<20; hyp+=0.05)
         {
             float cx = player_x + hyp*cos(angle);
             float cy = player_y + hyp*sin(angle);
-            if (map[int(cx) + int(cy)*map_w] != ' ') break;  // If we hit a wall/object, break
+            // if (map[int(cx) + int(cy)*map_w] != ' ') break;  // If we hit a wall/object, break
 
             size_t pix_x = cx * rect_w;
             size_t pix_y = cy * rect_h;
-            framebuffer[pix_x + pix_y*img_w] = pack_colour(255, 255, 255); // Draw white line showing view direction
+            framebuffer[pix_x + pix_y*img_w] = pack_colour(160, 160, 160); // Draw white line showing view direction
+
+            // Ray touches a wall, so draw the vertical column to create illusion of 3D
+            if (map[int(cx)+int(cy)*map_w]!=' ') 
+            {
+                size_t column_height = img_h/hyp;
+                draw_rectangle(framebuffer, pack_colour(0, 255, 255), img_w, img_h, img_w/2+i, img_h/2-column_height/2, 1, column_height);
+                break;
+            }
         }
     }
 
