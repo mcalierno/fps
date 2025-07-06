@@ -3,8 +3,7 @@
 #include <vector>
 #include <cstdint>
 #include <cassert>
-#include <sstream>
-#include <iomanip>
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #define _USE_MATH_DEFINES
@@ -24,6 +23,45 @@ void unpack_colour(const uint32_t& colour, uint8_t& r, uint8_t& g, uint8_t& b, u
     g = (colour >>  8) & 255;
     b = (colour >> 16) & 255;
     a = (colour >> 24) & 255;
+}
+
+
+bool load_texture(const std::string& filename, std::vector<uint32_t>& texture, size_t& text_size, size_t& text_cnt)
+{
+    int w, h;
+    int nchannels = -1;
+    
+    unsigned char* pixmap = stbi_load(filename.c_str(), &w, &h, &nchannels, 0);
+
+    if (!pixmap)
+    {
+        std::cerr << "Error: can not load the textures" << std::endl;
+        return false;
+    }
+
+    if (nchannels != 4)
+    {
+        std::cerr << "Error: the texture must be a 32 bit image" << std::endl;
+        stbi_image_free(pixmap);
+        return false;
+    }
+
+    texture = std::vector<uint32_t>(w*h);
+
+    for (int j = 0; j < h; j++)
+    {
+        for int (i = 0; i < w; i++)
+        {
+            uint8_t r = pixmap[(i + j*w)*4 + 0];
+            uint8_t g = pixmap[(i + j*w)*4 + 1];
+            uint8_t b = pixmap[(i + j*w)*4 + 2];
+            uint8_t a = pixmap[(i + j*w)*4 + 3];
+            texture[i+j*w] = pack_colour(r, g, b, a);
+        }
+    }
+
+    stbi_image_free(pixmap);
+    return true;
 }
 
 
@@ -82,6 +120,14 @@ int main()
     for (size_t i = 0; i < num_colours; i++)
     {
         colours[i] = pack_colour(rand()%255, rand()%255, rand()%255);
+    }
+
+    size_t walltext_size;  // texture dimensions (square)
+    size_t walltext_cnt;   // number of different textures in the image
+    if (!load_texture("../walltext.png", walltext, walltext_size, walltext_cnt)) 
+    {
+        std::cerr << "Failed to load wall textures" << std::endl;
+        return -1;
     }
 
     // Create one-dimensional array to hold our img (row-major), initialised to white

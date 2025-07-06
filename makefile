@@ -1,7 +1,7 @@
 CXX = clang++
-CXXFLAGS := 
+CXXFLAGS := -Ilib/stb
 DBGFLAGS := -g -O0
-COBJFLAGS := $(CFLAGS) -c
+COBJFLAGS := $(CFLAGS) $(CXXFLAGS) -c
 
 # path macros
 BIN_PATH := bin
