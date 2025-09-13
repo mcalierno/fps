@@ -1,5 +1,5 @@
 CXX = clang++
-CXXFLAGS := -Ilib/stb
+CXXFLAGS := -Ilib/stb -std=c++20
 DBGFLAGS := -g -O0
 COBJFLAGS := $(CFLAGS) $(CXXFLAGS) -c
 

@@ -1,0 +1,24 @@
+#ifndef FRAMEBUFFER_H
+#define FRAMEBUFFER_H
+
+#include <cstdint>
+#include <vector>
+
+
+struct FrameBuffer
+{
+    size_t w, h;   // img dimensions
+    std::vector<uint32_t> img;
+
+    void set_pixel(const size_t x, const size_t y, 
+                   const uint32_t colour);
+    
+    void draw_rectangle(const size_t x, const size_t y, 
+                        const size_t w, const size_t h, 
+                        const uint32_t colour);
+    
+    void clear(const uint32_t colour);
+};
+
+
+#endif
