@@ -8,8 +8,9 @@
 #include "utils.h"
 #include "textures.h"
 
-Texture::Texture(const std::string filename)
-    : img_w(0), img_h(0), texture_count(0), texture_size(0), img() 
+
+Texture::Texture(const std::string& filename)
+    : m_img_w(0), m_img_h(0), m_texture_count(0), m_texture_size(0), m_img() 
 {
     int w, h;
     int nchannels = -1;
@@ -28,19 +29,19 @@ Texture::Texture(const std::string filename)
         return;
     }
 
-    if (w!=h*int(w/h))
+    if (w != (h * int(w/h)))
     {
         std::cerr << "Error: the texture file must contain N square textures packed horizontally" << std::endl;
         stbi_image_free(pixmap);
         return;
     }
 
-    texture_count = w/h;
-    texture_size = w/texture_count;
-    img_w = w;
-    img_h = h;
+    m_texture_count = w/h;
+    m_texture_size = w/m_texture_count;
+    m_img_w = w;
+    m_img_h = h;
 
-    img = std::vector<uint32_t>(w*h);
+    m_img = std::vector<uint32_t>(w*h);
     for (int j=0; j<h; j++)
     {
          for (int i=0; i<w; i++)
@@ -49,7 +50,7 @@ Texture::Texture(const std::string filename)
             uint8_t g = pixmap[(i+j*w)*4+1];
             uint8_t b = pixmap[(i+j*w)*4+2];
             uint8_t a = pixmap[(i+j*w)*4+3];
-            img[i+j*w] = pack_colour(r, g, b, a);
+            m_img[i+j*w] = pack_colour(r, g, b, a);
         }
     }
     
@@ -57,22 +58,26 @@ Texture::Texture(const std::string filename)
 }
 
 
-uint32_t& Texture::get_px_from_texture(const size_t i, const size_t j, const size_t idx)
+size_t Texture::texture_size() const { return m_texture_size; }
+size_t Texture::texture_count() const { return m_texture_count; }
+
+
+uint32_t Texture::get_px_from_texture(const size_t i, const size_t j, const size_t idx) const
 {
-    assert(i < texture_size && j < texture_size && idx < texture_count);
-    return img[i + idx*texture_size + j*img_w];
+    assert(i < m_texture_size && j < m_texture_size && idx < m_texture_count);
+    return m_img[i + idx*m_texture_size + j*m_img_w];
 }
 
 
-std::vector<uint32_t> Texture::get_scaled_column(const size_t texture_id, const size_t texture_coord, const size_t column_height)
+std::vector<uint32_t> Texture::get_scaled_column(const size_t texture_id, const size_t texture_coord, const size_t column_height) const
 {
-    assert((texture_coord < texture_size) && (texture_id < texture_count));
+    assert((texture_coord < m_texture_size) && (texture_id < m_texture_count));
     std::vector<uint32_t> column(column_height);
     
     for (size_t y=0; y<column_height; y++)
     {
-        column[y] = get_px_from_texture(texture_coord, (y*texture_size)/column_height, texture_id);
+        column[y] = get_px_from_texture(texture_coord, (y*m_texture_size)/column_height, texture_id);
     }
 
-    return column;
+    return column;  // automatically uses move
 }

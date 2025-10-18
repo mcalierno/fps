@@ -4,13 +4,19 @@
 #include <cstdlib>
 
 
-struct Map
+class Map
 {
-    size_t w, h;
+    size_t m_width;
+    size_t m_height;
 
+public:
     Map();
-    int get(const size_t i, const size_t j);
-    bool is_empty(const size_t i, const size_t j);
+
+    size_t width() const;
+    size_t height() const;
+
+    int get(const size_t i, const size_t j) const;
+    bool is_empty(const size_t i, const size_t j) const;
 };
 
 

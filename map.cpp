@@ -22,27 +22,31 @@ static const char map[] = "0000222222220000"\
 
 
 Map::Map()
-    : w(16), h(16)
+    : m_width(16), m_height(16)
 {
-    assert(sizeof(map) == w*h + 1); // +1 for null terminated string
+    assert(sizeof(map) == m_width*m_height + 1); // +1 for null terminated string
 }
 
 
-int Map::get(const size_t i, const size_t j)
+size_t Map::width()  const { return m_width; }
+size_t Map::height() const { return m_height; }
+
+
+int Map::get(const size_t i, const size_t j) const
 {
-    assert(sizeof(map) == w*h + 1
-           && i < w 
-           && j < h);
+    assert(sizeof(map) == m_width*m_height + 1
+           && i < m_width 
+           && j < m_height);
            
-    return map[i + j*w] - '0';
+    return map[i + j*m_width] - '0';
 }
 
 
-bool Map::is_empty(const size_t i, const size_t j)
+bool Map::is_empty(const size_t i, const size_t j) const
 {
-    assert(sizeof(map) == w*h+1
-           && i < w 
-           && j < h);
+    assert(sizeof(map) == m_width*m_height+1
+           && i < m_width 
+           && j < m_height);
 
-    return map[i + j*w] == ' ';
+    return map[i + j*m_width] == ' ';
 }

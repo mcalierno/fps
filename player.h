@@ -4,9 +4,10 @@
 
 struct Player 
 {
-    float x_pos, y_pos;
-    float direction;
-    float fov;
+    double x_pos;
+    double y_pos;
+    double direction;
+    double fov;
 };
 
 
