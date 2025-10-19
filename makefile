@@ -1,5 +1,11 @@
 CXX = clang++
-CXXFLAGS := -Ilib/stb -std=c++20
+
+# Get SDL2 flags from sdl2-config or pkg-config (works on macOS Homebrew and Linux)
+SDL_CFLAGS := $(shell sdl2-config --cflags 2>/dev/null || pkg-config --cflags sdl2 2>/dev/null)
+SDL_LDFLAGS := $(shell sdl2-config --libs 2>/dev/null || pkg-config --libs sdl2 2>/dev/null)
+
+# Use CXXFLAGS for compilation. Keep CFLAGS empty (C only flags) to avoid undefined var.
+CXXFLAGS := -Ilib/stb -std=c++20 $(SDL_CFLAGS)
 DBGFLAGS := -g -O0
 COBJFLAGS := $(CFLAGS) $(CXXFLAGS) -c
 
@@ -31,7 +37,7 @@ default: makedir all
 
 # non-phony targets
 $(TARGET): $(OBJ)
-	$(CXX) -o $@ $(OBJ) $(CFLAGS)
+	$(CXX) -o $@ $(OBJ) $(SDL_LDFLAGS)
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	$(CXX) $(COBJFLAGS) -o $@ $<
@@ -40,7 +46,7 @@ $(DBG_PATH)/%.o: $(SRC_PATH)/%.c*
 	$(CXX) $(COBJFLAGS) $(DBGFLAGS) -o $@ $<
 
 $(TARGET_DEBUG): $(OBJ_DEBUG)
-	$(CXX) $(CFLAGS) $(DBGFLAGS) $(OBJ_DEBUG) -o $@
+	$(CXX) $(OBJ_DEBUG) $(DBGFLAGS) -o $@ $(SDL_LDFLAGS)
 
 # phony rules
 .PHONY: makedir

@@ -8,6 +8,8 @@ struct Player
     double y_pos;
     double direction;
     double fov;
+    int turn;
+    int walk;
 };
 
 

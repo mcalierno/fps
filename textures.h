@@ -15,7 +15,7 @@ class Texture
     std::vector<uint32_t> m_img;  // Textures storage container
 
 public:
-    Texture(const std::string& filename);
+    Texture(const std::string& filename, const uint32_t format);
 
     size_t texture_size() const;
     size_t texture_count() const;
